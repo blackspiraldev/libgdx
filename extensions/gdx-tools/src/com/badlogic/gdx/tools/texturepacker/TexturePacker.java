@@ -38,6 +38,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
@@ -45,10 +46,7 @@ import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.TextureAtlasData;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.TextureAtlasData.Region;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
-import com.badlogic.gdx.utils.GdxRuntimeException;
-import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.*;
 
 /** @author Nathan Sweet */
 public class TexturePacker {
@@ -140,7 +138,8 @@ public class TexturePacker {
 
 			progress.start(0.01f);
 			try {
-				writePackFile(outputDir, scaledPackFileName, pages);
+				System.out.println("TexturePacker.pack got here =" + settings.jsonMode);
+				writePackFile(outputDir, scaledPackFileName, pages, settings.jsonMode);
 			} catch (IOException ex) {
 				throw new RuntimeException("Error writing pack file.", ex);
 			}
@@ -325,7 +324,7 @@ public class TexturePacker {
 		}
 	}
 
-	private void writePackFile (File outputDir, String scaledPackFileName, Array<Page> pages) throws IOException {
+	private void writePackFile(File outputDir, String scaledPackFileName, Array<Page> pages, boolean jsonMode) throws IOException {
 		File packFile = new File(outputDir, scaledPackFileName + settings.atlasExtension);
 		File packDir = packFile.getParentFile();
 		packDir.mkdirs();
@@ -347,23 +346,33 @@ public class TexturePacker {
 		}
 
 		Writer writer = new OutputStreamWriter(new FileOutputStream(packFile, true), "UTF-8");
-		for (Page page : pages) {
-			writer.write("\n" + page.imageName + "\n");
-			writer.write("size: " + page.imageWidth + "," + page.imageHeight + "\n");
-			writer.write("format: " + settings.format + "\n");
-			writer.write("filter: " + settings.filterMin + "," + settings.filterMag + "\n");
-			writer.write("repeat: " + getRepeatValue() + "\n");
+		jsonMode = true;
+		if (jsonMode) {
+			System.out.println("Using json output mode");
+			//writing json out
+			new Json(JsonWriter.OutputType.json).toJson(pages, writer);
 
-			page.outputRects.sort();
-			for (Rect rect : page.outputRects) {
-				writeRect(writer, page, rect, rect.name);
-				Array<Alias> aliases = new Array(rect.aliases.toArray());
-				aliases.sort();
-				for (Alias alias : aliases) {
-					Rect aliasRect = new Rect();
-					aliasRect.set(rect);
-					alias.apply(aliasRect);
-					writeRect(writer, page, aliasRect, alias.name);
+		} else {
+
+
+			for (Page page : pages) {
+				writer.write("\n" + page.imageName + "\n");
+				writer.write("size: " + page.imageWidth + "," + page.imageHeight + "\n");
+				writer.write("format: " + settings.format + "\n");
+				writer.write("filter: " + settings.filterMin + "," + settings.filterMag + "\n");
+				writer.write("repeat: " + getRepeatValue() + "\n");
+
+				page.outputRects.sort();
+				for (Rect rect : page.outputRects) {
+					writeRect(writer, page, rect, rect.name);
+					Array<Alias> aliases = new Array(rect.aliases.toArray());
+					aliases.sort();
+					for (Alias alias : aliases) {
+						Rect aliasRect = new Rect();
+						aliasRect.set(rect);
+						alias.apply(aliasRect);
+						writeRect(writer, page, aliasRect, alias.name);
+					}
 				}
 			}
 		}
@@ -605,6 +614,7 @@ public class TexturePacker {
 		try {
 			TexturePackerFileProcessor processor = new TexturePackerFileProcessor(settings, packFileName) {
 				protected TexturePacker newTexturePacker (File root, Settings settings) {
+					System.out.println("TexturePacker.newTexturePacker in here - " + settings.jsonMode);
 					TexturePacker packer = super.newTexturePacker(root, settings);
 					packer.setProgressListener(progress);
 					return packer;
@@ -775,6 +785,7 @@ public class TexturePacker {
 		public String[] scaleSuffix = {""};
 		public Resampling[] scaleResampling = {Resampling.bicubic};
 		public String atlasExtension = ".atlas";
+		public boolean jsonMode = false;
 
 		public Settings () {
 		}
@@ -844,21 +855,26 @@ public class TexturePacker {
 	}
 
 	static public void main (String[] args) throws Exception {
+		System.out.println("TexturePacker.main");
 		Settings settings = null;
 		String input = null, output = null, packFileName = "pack.atlas";
 
 		switch (args.length) {
 		case 4:
 			settings = new Json().fromJson(Settings.class, new FileReader(args[3]));
-		case 3:
+		case 3: {
+			if (settings == null) settings = new Settings();
+			settings.jsonMode = args[2].endsWith(".json");
+			System.out.println("TexturePacker.main - setting json mode: " + settings.jsonMode);
 			packFileName = args[2];
+		}
 		case 2:
 			output = args[1];
 		case 1:
 			input = args[0];
 			break;
 		default:
-			System.out.println("Usage: inputDir [outputDir] [packFileName] [settingsFileName]");
+			System.out.println("Picasso Texture Packer Usage: inputDir [outputDir] [packFileName] [settingsFileName]");
 			System.exit(0);
 		}
 
@@ -867,7 +883,7 @@ public class TexturePacker {
 			output = new File(inputFile.getParentFile(), inputFile.getName() + "-packed").getAbsolutePath();
 		}
 		if (settings == null) settings = new Settings();
-
+		System.out.println("TexturePacker.main - jsonMode= " + settings.jsonMode);
 		process(settings, input, output, packFileName);
 	}
 }
