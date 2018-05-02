@@ -356,17 +356,16 @@ public class TexturePacker {
 				page.outputRects.sort();
 				json.writeArrayStart("images");
 				for (Rect rect : page.outputRects) {
-					json.writeObjectStart();
-					json.writeField(rect, "name", "id");
-
-					json.writeObjectStart("bounds");
-					json.writeValue("x", (page.x + rect.x));
-					json.writeValue("y", (page.y + page.height - rect.height - rect.y));
-					json.writeValue("w", rect.regionWidth);
-					json.writeValue("h", rect.regionHeight);
-
-					json.writeObjectEnd();
-					json.writeObjectEnd();
+					writeRectJson(page, rect, json, rect.name);
+					//Write aliases
+					Array<Alias> aliases = new Array(rect.aliases.toArray());
+					aliases.sort();
+					for (Alias alias : aliases) {
+						Rect aliasRect = new Rect();
+						aliasRect.set(rect);
+						alias.apply(aliasRect);
+						writeRectJson(page, aliasRect, json, alias.name);
+					}
 				}
 				json.writeArrayEnd();
 			}
@@ -399,7 +398,27 @@ public class TexturePacker {
 		writer.close();
 	}
 
-	private void writeRect (Writer writer, Page page, Rect rect, String name) throws IOException {
+	private void writeRectJson (Page page, Rect rect, Json json, String name) throws IOException {
+		json.writeObjectStart();
+
+		json.writeObjectStart("bounds");
+		json.writeValue("h", rect.regionHeight);
+		json.writeValue("w", rect.regionWidth);
+		json.writeValue("y", (page.y + page.height - rect.height - rect.y));
+		json.writeValue("x", (page.x + rect.x));
+
+		json.writeObjectEnd();
+
+		json.writeValue("id", name);
+
+		json.writeObjectEnd();
+
+
+	}
+
+
+
+		private void writeRect (Writer writer, Page page, Rect rect, String name) throws IOException {
 		writer.write(Rect.getAtlasName(name, settings.flattenPaths) + "\n");
 		writer.write("  rotate: " + rect.rotated + "\n");
 		writer.write("  xy: " + (page.x + rect.x) + ", " + (page.y + page.height - rect.height - rect.y) + "\n");
@@ -875,7 +894,6 @@ public class TexturePacker {
 	}
 
 	static public void main (String[] args) throws Exception {
-		System.out.println("TexturePacker.main");
 		Settings settings = null;
 		String input = null, output = null, packFileName = "pack.atlas";
 
@@ -885,7 +903,7 @@ public class TexturePacker {
 		case 3: {
 			if (settings == null) settings = new Settings();
 			settings.jsonMode = args[2].endsWith(".json");
-			System.out.println("TexturePacker.main - setting json mode: " + settings.jsonMode);
+//			System.out.println("TexturePacker.main - setting json mode: " + settings.jsonMode);
 			packFileName = args[2];
 		}
 		case 2:
@@ -894,7 +912,7 @@ public class TexturePacker {
 			input = args[0];
 			break;
 		default:
-			System.out.println("Picasso hello2 Texture Packer Usage: inputDir [outputDir] [packFileName] [settingsFileName]");
+			System.out.println("Texture Packer Usage: inputDir [outputDir] [packFileName] [settingsFileName]");
 			System.exit(0);
 		}
 

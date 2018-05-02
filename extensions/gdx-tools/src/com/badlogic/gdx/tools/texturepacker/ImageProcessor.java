@@ -28,10 +28,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 
 import com.badlogic.gdx.tools.texturepacker.TexturePacker.Alias;
 import com.badlogic.gdx.tools.texturepacker.TexturePacker.Resampling;
@@ -66,6 +68,10 @@ public class ImageProcessor {
 
 	/** The image won't be kept in-memory during packing if {@link Settings#limitMemory} is true. */
 	public void addImage (File file) {
+		Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("PSD");
+		while (readers.hasNext()) {
+			System.out.println("reader: " + readers.next());
+		}
 		BufferedImage image;
 		try {
 			image = ImageIO.read(file);

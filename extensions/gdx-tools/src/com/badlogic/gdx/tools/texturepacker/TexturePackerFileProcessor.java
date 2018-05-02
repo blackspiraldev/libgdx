@@ -53,7 +53,8 @@ public class TexturePackerFileProcessor extends FileProcessor {
 
 		setFlattenOutput(true);
 		//here we add PSD support.
-		addInputSuffix(".png", ".jpg", ".jpeg");
+		addInputSuffix(".psd");
+//		addInputSuffix(".psd",".png", ".jpg", ".jpeg");
 	}
 
 	public ArrayList<Entry> process (File inputFile, File outputRoot) throws Exception {

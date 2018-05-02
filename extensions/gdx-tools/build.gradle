@@ -19,6 +19,8 @@ dependencies {
     compile project(":backends:gdx-backend-lwjgl")
     compile project(":extensions:gdx-freetype")
     compile project(":backends:gdx-backend-headless")
+    compile 'com.twelvemonkeys.imageio:imageio-reference:3.3.2'
+    compile 'com.twelvemonkeys.imageio:imageio-psd:3.3.2'
     compile testnatives.desktop
 }
 
