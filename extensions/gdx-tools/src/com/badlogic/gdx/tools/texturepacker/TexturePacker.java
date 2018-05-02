@@ -348,9 +348,29 @@ public class TexturePacker {
 		Writer writer = new OutputStreamWriter(new FileOutputStream(packFile, true), "UTF-8");
 		jsonMode = true;
 		if (jsonMode) {
-			System.out.println("Using json output mode");
-			//writing json out
-			new Json(JsonWriter.OutputType.json).toJson(pages, writer);
+			final Json json = new Json(JsonWriter.OutputType.json);
+			json.setWriter(writer);
+			json.writeObjectStart();
+			for (Page page : pages) {
+
+				page.outputRects.sort();
+				json.writeArrayStart("images");
+				for (Rect rect : page.outputRects) {
+					json.writeObjectStart();
+					json.writeField(rect, "name", "id");
+
+					json.writeObjectStart("bounds");
+					json.writeValue("x", (page.x + rect.x));
+					json.writeValue("y", (page.y + page.height - rect.height - rect.y));
+					json.writeValue("w", rect.regionWidth);
+					json.writeValue("h", rect.regionHeight);
+
+					json.writeObjectEnd();
+					json.writeObjectEnd();
+				}
+				json.writeArrayEnd();
+			}
+			json.writeObjectEnd();
 
 		} else {
 
@@ -874,7 +894,7 @@ public class TexturePacker {
 			input = args[0];
 			break;
 		default:
-			System.out.println("Picasso Texture Packer Usage: inputDir [outputDir] [packFileName] [settingsFileName]");
+			System.out.println("Picasso hello2 Texture Packer Usage: inputDir [outputDir] [packFileName] [settingsFileName]");
 			System.exit(0);
 		}
 

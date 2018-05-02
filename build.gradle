@@ -36,15 +36,15 @@ allprojects {
     }
 }
 
-configure(subprojects - project(":tests:gdx-tests-android")) {
-    apply plugin: "idea"
-    apply plugin: "java"
-
-    compileJava {
-        options.fork = true
-        options.incremental = true
-    }
-}
+//configure(subprojects - project(":tests:gdx-tests-android")) {
+//    apply plugin: "idea"
+//    apply plugin: "java"
+//
+//    compileJava {
+//        options.fork = true
+//        options.incremental = true
+//    }
+//}
 
 task fetchNatives {
     doLast {
