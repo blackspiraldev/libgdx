@@ -52,9 +52,7 @@ public class TexturePackerFileProcessor extends FileProcessor {
 		this.packFileName = packFileName;
 
 		setFlattenOutput(true);
-		//here we add PSD support.
-		addInputSuffix(".psd");
-//		addInputSuffix(".psd",".png", ".jpg", ".jpeg");
+		addInputSuffix(".psd",".png", ".jpg", ".jpeg");
 	}
 
 	public ArrayList<Entry> process (File inputFile, File outputRoot) throws Exception {
@@ -222,7 +220,6 @@ public class TexturePackerFileProcessor extends FileProcessor {
 
 		// Pack.
 		if (!settings.silent) System.out.println(inputDir.inputFile.getName());
-		System.out.println("TexturePackerFileProcessor.processDir or here");
 		TexturePacker packer = newTexturePacker(root, settings);
 		for (Entry file : files)
 			packer.addImage(file.inputFile);
@@ -230,7 +227,6 @@ public class TexturePackerFileProcessor extends FileProcessor {
 	}
 
 	protected TexturePacker newTexturePacker (File root, Settings settings) {
-		System.out.println("settings = " + settings.jsonMode);
 		return new TexturePacker(root, settings);
 	}
 }

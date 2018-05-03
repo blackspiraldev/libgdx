@@ -68,10 +68,6 @@ public class ImageProcessor {
 
 	/** The image won't be kept in-memory during packing if {@link Settings#limitMemory} is true. */
 	public void addImage (File file) {
-		Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("PSD");
-		while (readers.hasNext()) {
-			System.out.println("reader: " + readers.next());
-		}
 		BufferedImage image;
 		try {
 			image = ImageIO.read(file);

@@ -138,7 +138,6 @@ public class TexturePacker {
 
 			progress.start(0.01f);
 			try {
-				System.out.println("TexturePacker.pack got here =" + settings.jsonMode);
 				writePackFile(outputDir, scaledPackFileName, pages, settings.jsonMode);
 			} catch (IOException ex) {
 				throw new RuntimeException("Error writing pack file.", ex);
@@ -346,7 +345,7 @@ public class TexturePacker {
 		}
 
 		Writer writer = new OutputStreamWriter(new FileOutputStream(packFile, true), "UTF-8");
-		jsonMode = true;
+
 		if (jsonMode) {
 			final Json json = new Json(JsonWriter.OutputType.json);
 			json.setWriter(writer);
@@ -653,7 +652,6 @@ public class TexturePacker {
 		try {
 			TexturePackerFileProcessor processor = new TexturePackerFileProcessor(settings, packFileName) {
 				protected TexturePacker newTexturePacker (File root, Settings settings) {
-					System.out.println("TexturePacker.newTexturePacker in here - " + settings.jsonMode);
 					TexturePacker packer = super.newTexturePacker(root, settings);
 					packer.setProgressListener(progress);
 					return packer;
@@ -875,6 +873,7 @@ public class TexturePacker {
 			scaleSuffix = Arrays.copyOf(settings.scaleSuffix, settings.scaleSuffix.length);
 			scaleResampling = Arrays.copyOf(settings.scaleResampling, settings.scaleResampling.length);
 			atlasExtension = settings.atlasExtension;
+			jsonMode = settings.jsonMode;
 		}
 
 		public String getScaledPackFileName (String packFileName, int scaleIndex) {
@@ -903,7 +902,6 @@ public class TexturePacker {
 		case 3: {
 			if (settings == null) settings = new Settings();
 			settings.jsonMode = args[2].endsWith(".json");
-//			System.out.println("TexturePacker.main - setting json mode: " + settings.jsonMode);
 			packFileName = args[2];
 		}
 		case 2:
@@ -921,7 +919,6 @@ public class TexturePacker {
 			output = new File(inputFile.getParentFile(), inputFile.getName() + "-packed").getAbsolutePath();
 		}
 		if (settings == null) settings = new Settings();
-		System.out.println("TexturePacker.main - jsonMode= " + settings.jsonMode);
 		process(settings, input, output, packFileName);
 	}
 }
